@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Student Portal + Admin Panel</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+    body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: #eef2f3;
+        overflow-x: hidden;
+    }
+    .center-box {
+        width: 350px;
+        margin: 100px auto;
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 0 15px rgba(0,0,0,0.1);
+        animation: fadeIn .5s ease-in-out;
+    }
+    @keyframes fadeIn { from {opacity:0;} to {opacity:1;} }
+
+    input, select {
+        width: 100%;
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 6px;
+        border: 1px solid gray;
+    }
+
+    button {
+        width: 100%;
+        padding: 10px;
+        background: #007bff;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 16px;
+    }
+    button:hover { background: #0056b3; }
+
+    /* Dashboard Layout */
+    #dashboard {
+        display: none;
+        height: 100vh;
+        display: flex;
+    }
+
+    .sidebar {
+        width: 65px;
+        background: #0d6efd;
+        height: 100vh;
+        color: #fff;
+        transition: .4s;
+        overflow: hidden;
+        position: fixed;
+    }
+    .sidebar:hover { width: 220px; }
+
+    .menu-item {
+        padding: 15px;
+        cursor: pointer;
+        white-space: nowrap;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    .menu-item:hover { background: rgba(255,255,255,0.2); }
+
+    .logout-btn {
+        margin-top: 200px;
+        padding: 12px;
+        background: red;
+        cursor: pointer;
+        border-radius: 6px;
+        text-align: center;
+    }
+    .logout-btn:hover { background: darkred; }
+
+    .content-area {
+        margin-left: 80px;
+        padding: 20px;
+        width: 100%;
+        transition: .4s;
+    }
+    .sidebar:hover ~ .content-area {
+        margin-left: 230px;
+    }
+
+    .tab-content {
+        display: none;
+        background: #1e293b;
+        padding: 25px;
+        color: white;
+        border-radius: 12px;
+        animation: fadeIn .4s ease-in-out;
+        font-size: 18px;
+    }
+    .visible { display: block; }
+
+    /* Tab Colors */
+    #details { background:#6d28d9; }
+    #notice { background:#0d9488; }
+    #assign { background:#f59e0b; }
+    #project { background:#ea580c; }
+    #study { background:#2563eb; }
+    #lecture { background:#dc2626; }
+    #allStudents { background:#0f172a; }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 15px;
+        background: white;
+        color: black;
+        font-size: 16px;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    th, td {
+        padding: 10px;
+        border-bottom: 1px solid #ddd;
+        text-align: left;
+    }
+    th {
+        background: #0d6efd;
+        color: white;
+    }
+
+    .uploadBox input {
+        width: 100%;
+        padding: 10px;
+        margin: 7px 0;
+        border-radius: 6px;
+        border: 1px solid gray;
+    }
+
+    .uploadCard {
+        padding: 12px;
+        background: white;
+        color: black;
+        border-radius: 10px;
+        margin: 10px 0;
+    }
+</style>
+</head>
+<body>
+
+<!-- LOGIN PAGE -->
+<div id="loginPage" class="center-box">
+    <h2>Login</h2>
+    <input id="loginEmail" type="email" placeholder="Email">
+    <input id="loginPass" type="password" placeholder="Password">
+    <button onclick="login()">Login</button>
+    <p style="text-align:center;">No account?
+        <span onclick="showRegister()" style="color:blue;cursor:pointer;">Register</span>
+    </p>
+</div>
+
+<!-- REGISTER PAGE -->
+<div id="registerPage" class="center-box" style="display:none;">
+    <h2>Register</h2>
+    <input id="regName" placeholder="Full Name">
+    <input id="regRoll" placeholder="University Roll No. (Students only)">
+    <input id="regDob" type="date">
+    <select id="regClass">
+        <option value="">Select Class</option>
+        <option>1st Year</option>
+        <option>2nd Year</option>
+        <option>3rd Year</option>
+    </select>
+
+    <select id="regRole">
+        <option value="student">Student</option>
+        <option value="admin">Admin</option>
+    </select>
+
+    <input id="regEmail" type="email" placeholder="Email">
+    <input id="regPass" type="password" placeholder="Password">
+    <button onclick="register()">Register</button>
+
+    <p style="text-align:center;">Already registered?
+        <span onclick="showLogin()" style="color:blue;cursor:pointer;">Login</span>
+    </p>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard">
+
+    <div class="sidebar">
+        <div class="menu-item" onclick="openTab('home')">🏠 Dashboard</div>
+        <div class="menu-item" onclick="openTab('details')">📄 Student Details</div>
+        <div class="menu-item" onclick="openTab('allStudents')">👥 All Students</div>
+        <div class="menu-item" onclick="openTab('notice')">📌 Notice</div>
+        <div class="menu-item" onclick="openTab('assign')">📝 Assignment</div>
+        <div class="menu-item" onclick="openTab('project')">📁 Project</div>
+        <div class="menu-item" onclick="openTab('study')">📚 Study Material</div>
+        <div class="menu-item" onclick="openTab('lecture')">🎤 Lecture</div>
+        <div class="logout-btn" onclick="logout()">Logout</div>
+    </div>
+
+    <div class="content-area">
+
+        <div id="home" class="tab-content visible">
+            <h2>Welcome <span id="userName"></span> 🎓</h2>
+            <p id="roleMsg"></p>
+        </div>
+
+        <div id="details" class="tab-content">
+            <h2>Student Information</h2>
+            <p><b>Name:</b> <span id="dName"></span></p>
+            <p><b>Roll No:</b> <span id="dRoll"></span></p>
+            <p><b>DOB:</b> <span id="dDob"></span></p>
+            <p><b>Class:</b> <span id="dClass"></span></p>
+        </div>
+
+        <div id="allStudents" class="tab-content">
+            <h2>All Students</h2>
+
+            <table>
+                <tr>
+                    <th>S.No</th>
+                    <th>Student Name</th>
+                    <th>Roll Number</th>
+                </tr>
+
+                <tr><td>1</td><td>ABHAY SINGH SOLANKI</td><td>2402221540001</td></tr>
+                <tr><td>2</td><td>ABHISHEK PATHAK</td><td>2402221540002</td></tr>
+                <tr><td>3</td><td>ADITYA KUMAR</td><td>2402221540003</td></tr>
+                <tr><td>4</td><td>ADITYA KUMAR CHAUDHARY</td><td>2402221540004</td></tr>
+                <tr><td>5</td><td>ADITYA RAJ</td><td>2402221540005</td></tr>
+                <tr><td>6</td><td>ADITYA SINGH</td><td>2402221540006</td></tr>
+                <tr><td>7</td><td>ADITYA YADAV</td><td>2402221540007</td></tr>
+                <tr><td>8</td><td>AMAN PANDEY</td><td>2402221540008</td></tr>
+                <tr><td>9</td><td>ANANT PRATAP SINGH</td><td>2402221540009</td></tr>
+                <tr><td>10</td><td>ANSHU</td><td>2402221540010</td></tr>
+                <tr><td>11</td><td>ANUJ KUMAR RAJPUT</td><td>2402221540011</td></tr>
+                <tr><td>12</td><td>ANSHUMAN SINGH</td><td>2402221540013</td></tr>
+                <tr><td>13</td><td>ARYAN RAJPUT</td><td>2402221540014</td></tr>
+                <tr><td>14</td><td>ARYAN SHARMA</td><td>2402221540015</td></tr>
+                <tr><td>15</td><td>ARYAN SMRIT GUPTA</td><td>2402221540016</td></tr>
+                <tr><td>16</td><td>ASHUTOSH KUMAR</td><td>2402221540017</td></tr>
+                <tr><td>17</td><td>AYUSH</td><td>2402221540018</td></tr>
+                <tr><td>18</td><td>AYUSH KUMAR SHRIVASTAVA</td><td>2402221540019</td></tr>
+                <tr><td>19</td><td>AYUSHMAN SINGH</td><td>2402221540020</td></tr>
+                <tr><td>20</td><td>DEEPAK</td><td>2402221540021</td></tr>
+                <tr><td>21</td><td>DEEPAK KUMAR YADAV</td><td>2402221540022</td></tr>
+                <tr><td>22</td><td>DEVANSH SINGAWAN</td><td>2402221540023</td></tr>
+                <tr><td>23</td><td>DIVYANSHU SINGH</td><td>2402221540024</td></tr>
+                <tr><td>24</td><td>EBAYA KAYINA</td><td>2402221540025</td></tr>
+                <tr><td>25</td><td>HEMANT KUMAR</td><td>2402221540026</td></tr>
+                <tr><td>26</td><td>HIMANSHU PRAJAPATI</td><td>2402221540027</td></tr>
+                <tr><td>27</td><td>HIMANSHU SINGH</td><td>2402221540028</td></tr>
+                <tr><td>28</td><td>JAYESH PRATAP SINGH</td><td>2402221540029</td></tr>
+                <tr><td>29</td><td>KARTIK SINGH BHADORIA</td><td>2402221540030</td></tr>
+                <tr><td>30</td><td>KUSH KRISHNA</td><td>2402221540031</td></tr>
+                <tr><td>31</td><td>MANJEET PATEL</td><td>2402221540032</td></tr>
+                <tr><td>32</td><td>MANOHARAN SINGH</td><td>2402221540033</td></tr>
+                <tr><td>33</td><td>MD SAKIB</td><td>2402221540034</td></tr>
+                <tr><td>34</td><td>MOHD HUSAIN</td><td>2402221540035</td></tr>
+                <tr><td>35</td><td>NIKHIL RAJ</td><td>2402221540036</td></tr>
+                <tr><td>36</td><td>NITIN RAGHAV</td><td>2402221540037</td></tr>
+                <tr><td>37</td><td>PRAKHAR VERMA</td><td>2402221540038</td></tr>
+                <tr><td>38</td><td>PRIYANSHU</td><td>2402221540039</td></tr>
+                <tr><td>39</td><td>RAGHU RAJ SINGH</td><td>2402221540040</td></tr>
+                <tr><td>40</td><td>RAGHVENDRA KUSHWAHA</td><td>2402221540041</td></tr>
+                <tr><td>41</td><td>RAGHVENDRA YADAV</td><td>2402221540042</td></tr>
+                <tr><td>42</td><td>RAJ SHARMA</td><td>2402221540043</td></tr>
+                <tr><td>43</td><td>RAJ SRIVASTAVA</td><td>2402221540044</td></tr>
+                <tr><td>44</td><td>RAJIV KUMAR</td><td>2402221540045</td></tr>
+                <tr><td>45</td><td>RITIK CHAUDHARY</td><td>2402221540046</td></tr>
+                <tr><td>46</td><td>RITUL KUMAR</td><td>2402221540047</td></tr>
+                <tr><td>47</td><td>SACHIN MAURYA</td><td>2402221540048</td></tr>
+                <tr><td>48</td><td>SAKSHI KUMARI</td><td>2402221540049</td></tr>
+                <tr><td>49</td><td>SAMRAT RAGHUVANSHI</td><td>2402221540050</td></tr>
+                <tr><td>50</td><td>SANDALI</td><td>2402221540051</td></tr>
+                <tr><td>51</td><td>SANDEEP SARSAWAT</td><td>2402221540052</td></tr>
+                <tr><td>52</td><td>SHASHANK ANWAR</td><td>2402221540053</td></tr>
+                <tr><td>53</td><td>SHASHWAT MISHRA</td><td>2402221540054</td></tr>
+                <tr><td>54</td><td>SHREY SRIVASTAVA</td><td>2402221540055</td></tr>
+                <tr><td>55</td><td>SNEHA KUMARI KUMMURU</td><td>2402221540056</td></tr>
+                <tr><td>56</td><td>SONU KUMAR SINGH</td><td>2402221540057</td></tr>
+                <tr><td>57</td><td>TANMAY KRISHNA</td><td>2402221540058</td></tr>
+                <tr><td>58</td><td>TANYU PRIYA</td><td>2402221540059</td></tr>
+                <tr><td>59</td><td>UDAY PRATAP</td><td>2402221540060</td></tr>
+                <tr><td>60</td><td>VAISHNAV TIWARI</td><td>2402221540061</td></tr>
+                <tr><td>61</td><td>VANSHIT TYAGI</td><td>2402221540062</td></tr>
+                <tr><td>62</td><td>VISHAL SHARMA</td><td>2402221540063</td></tr>
+                <tr><td>63</td><td>YOGESH SINGH MEHTA</td><td>2402221540064</td></tr>
+
+            </table>
+        </div>
+
+        <div id="notice" class="tab-content">📌 No Notices Yet</div>
+
+        <!-- Assignments Tab -->
+        <div id="assign" class="tab-content">
+            <h2>Assignments</h2>
+            <div id="assignList">No Assignments Yet</div>
+        </div>
+
+        <!-- Projects Tab -->
+        <div id="project" class="tab-content">
+            <h2>Projects</h2>
+            <div id="projectList">No Projects Yet</div>
+        </div>
+
+        <div id="study" class="tab-content">📚 No Study Material Yet</div>
+        <div id="lecture" class="tab-content">🎤 No Lectures Yet</div>
+
+    </div>
+</div>
+<script>
+// =========================================
+// BASIC LOGIN SYSTEM
+// =========================================
+
+let users = JSON.parse(localStorage.getItem("students") || "[]");
+let currentUser = null;
+
+function showRegister() {
+    loginPage.style.display = "none";
+    registerPage.style.display = "block";
+}
+function showLogin() {
+    loginPage.style.display = "block";
+    registerPage.style.display = "none";
+}
+
+function register() {
+    let user = {
+        name: regName.value,
+        roll: regRoll.value,
+        dob: regDob.value,
+        class: regClass.value,
+        role: regRole.value,
+        email: regEmail.value,
+        pass: regPass.value
+    };
+
+    users.push(user);
+    localStorage.setItem("students", JSON.stringify(users));
+
+    alert("Registered Successfully!");
+    showLogin();
+}
+
+function login() {
+    let email = loginEmail.value;
+    let pass = loginPass.value;
+
+    currentUser = users.find(u => u.email === email && u.pass === pass);
+
+    if (!currentUser) {
+        alert("Invalid Login");
+        return;
+    }
+
+    loadDashboard();
+}
+
+function loadDashboard() {
+    loginPage.style.display = "none";
+    registerPage.style.display = "none";
+    dashboard.style.display = "flex";
+
+    userName.textContent = currentUser.name;
+    dName.textContent = currentUser.name;
+    dRoll.textContent = currentUser.roll;
+    dDob.textContent = currentUser.dob;
+    dClass.textContent = currentUser.class;
+
+    roleMsg.textContent =
+        currentUser.role === "admin"
+            ? "You are logged in as Admin. You can upload material."
+            : "You are logged in as Student.";
+}
+
+// =========================================
+// TABS
+// =========================================
+
+function openTab(tab) {
+    document.querySelectorAll(".tab-content").forEach(t => t.classList.remove("visible"));
+    document.getElementById(tab).classList.add("visible");
+
+    // Show uploaded data when tab opens
+    if (tab === "assign") showAssignments();
+    if (tab === "project") showProjects();
+    if (tab === "notice") showNotices();
+
+    // Admin upload area for assign/project/notice
+    if (currentUser && currentUser.role === "admin") enableAdmin(tab);
+}
+
+// =========================================
+// ASSIGNMENT + PROJECT + NOTICE STORAGE
+// =========================================
+
+let assignments = JSON.parse(localStorage.getItem("assignments") || "[]");
+let projects = JSON.parse(localStorage.getItem("projects") || "[]");
+let notices = JSON.parse(localStorage.getItem("notices") || "[]");
+
+// =========================================
+// RENDER ASSIGNMENTS
+// =========================================
+
+function showAssignments() {
+    let box = document.getElementById("assignList");
+
+    if (assignments.length === 0) {
+        box.innerHTML = "No Assignments Yet";
+        return;
+    }
+
+    box.innerHTML = assignments
+        .map((a, idx) => `
+            <div class="uploadCard">
+                <b>${a.title}</b><br>
+                <a href="${a.link}" target="_blank">📥 Download File</a>
+            </div>
+        `)
+        .join("");
+}
+
+// =========================================
+// RENDER PROJECTS
+// =========================================
+
+function showProjects() {
+    let box = document.getElementById("projectList");
+
+    if (projects.length === 0) {
+        box.innerHTML = "No Projects Yet";
+        return;
+    }
+
+    box.innerHTML = projects
+        .map((p, idx) => `
+            <div class="uploadCard">
+                <b>${p.title}</b><br>
+                <a href="${p.link}" target="_blank">📥 Download File</a>
+            </div>
+        `)
+        .join("");
+}
+
+// =========================================
+// RENDER NOTICES
+// =========================================
+
+function showNotices() {
+    let box = document.getElementById("notice");
+
+    if (notices.length === 0) {
+        box.innerHTML = "📌 No Notices Yet";
+        return;
+    }
+
+    // keep header look consistent
+    let out = notices
+        .map(n => `
+            <div class="uploadCard">
+                <b>${n.title}</b><br>
+                <div>${n.message ? n.message : ''}</div>
+                ${n.link ? `<a href="${n.link}" target="_blank">📥 Download File</a>` : ''}
+            </div>
+        `)
+        .join("");
+
+    box.innerHTML = out;
+}
+
+// =========================================
+// ADMIN UPLOAD UI (ONLY IN ASSIGN, PROJECT, NOTICE)
+// =========================================
+
+function enableAdmin(tab) {
+    let area = document.getElementById(tab);
+
+    // Only allow upload box in assign, project, notice
+    if (!(tab === "assign" || tab === "project" || tab === "notice")) return;
+
+    // Don't duplicate
+    if (area.querySelector(".uploadBox")) return;
+
+    if (tab === "notice") {
+        area.innerHTML += `
+            <div class="uploadBox">
+                <input id="title_notice" type="text" placeholder="Enter Notice Title">
+                <input id="message_notice" type="text" placeholder="Enter Notice Message (optional)">
+                <input id="link_notice" type="text" placeholder="Paste Online File Link (optional)">
+                <button onclick="uploadFile('notice')">Upload</button>
+            </div>
+        `;
+        return;
+    }
+
+    // assign or project
+    area.innerHTML += `
+        <div class="uploadBox">
+            <input id="title_${tab}" type="text" placeholder="Enter Title">
+            <input id="link_${tab}" type="text" placeholder="Paste Online File Link (Drive/GitHub)">
+            <button onclick="uploadFile('${tab}')">Upload</button>
+        </div>
+    `;
+}
+
+// =========================================
+// UPLOAD HANDLER
+// =========================================
+
+function uploadFile(tab) {
+    if (tab === "notice") {
+        let title = document.getElementById("title_notice").value;
+        let message = document.getElementById("message_notice").value;
+        let link = document.getElementById("link_notice").value;
+
+        if (!title) {
+            alert("Please enter notice title");
+            return;
+        }
+
+        notices.unshift({ title, message, link }); // newest first
+        localStorage.setItem("notices", JSON.stringify(notices));
+        showNotices();
+        alert("Notice uploaded!");
+        return;
+    }
+
+    let title = document.getElementById("title_" + tab).value;
+    let link = document.getElementById("link_" + tab).value;
+
+    if (!title || !link) {
+        alert("Please fill both fields!");
+        return;
+    }
+
+    if (tab === "assign") {
+        assignments.unshift({ title, link });
+        localStorage.setItem("assignments", JSON.stringify(assignments));
+        showAssignments();
+    }
+
+    if (tab === "project") {
+        projects.unshift({ title, link });
+        localStorage.setItem("projects", JSON.stringify(projects));
+        showProjects();
+    }
+
+    alert("Uploaded Successfully!");
+}
+
+// =========================================
+// LOGOUT
+// =========================================
+
+function logout() {
+    dashboard.style.display = "none";
+    loginPage.style.display = "block";
+}
+
+// On page load: if there are stored notices/assign/projects, ensure they're ready if user opens tabs after login
+// (No automatic rendering before login because tabs hidden)
+</script>
